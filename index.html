@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="FinanCerto">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-v2-180.png">
 <link rel="manifest" href="manifest.json">
 <title>FinanCerto</title>
 <style>
@@ -106,7 +106,7 @@ input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:
 .nt{display:flex;align-items:center;gap:12px;border-radius:16px;padding:14px;margin-bottom:10px}.nt div{flex:1}.nt b{display:block;font-size:15px}.nt small{color:#4b5b70;font-size:13px}
 .nt.red{background:#fdeceb}.nt.green{background:var(--greenbg)}.nt.blue{background:#e8f1fb}.nic{display:grid;place-items:center;width:34px}
 .seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.seg3 button{padding:12px 4px;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:15px;color:var(--mut)}.seg3 button.on{border-color:var(--green);background:var(--greenbg);color:var(--green)}
-.qb{display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:16px}.qb b{display:block;color:var(--navy)}.qb small{color:var(--mut);font-size:13px}nav button .navpig{width:25px;height:25px;object-fit:contain;filter:grayscale(1) opacity(.6)}nav button.on .navpig{filter:none}header{background:var(--navy);border-bottom:0}header .mes{color:#fff}header .mes button{background:#ffffff26;color:#fff}header .chip{background:#ffffff1a;border-color:#ffffff33;color:#cfe0f2}header .chip.on{background:#fff;border-color:#fff;color:var(--navy)}
+.qb{display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:16px}.qb b{display:block;color:var(--navy)}.qb small{color:var(--mut);font-size:13px}nav button .navpig{width:25px;height:25px;object-fit:contain;filter:grayscale(1) opacity(.6)}nav button.on .navpig{filter:none}header{background:var(--navy);border-bottom:0}header .mes{color:#fff}header .mes button{background:#ffffff26;color:#fff}header .chip{background:#ffffff1a;border-color:#ffffff33;color:#cfe0f2}header .chip.on{background:#fff;border-color:#fff;color:var(--navy)}html[data-theme=dark]{--bg:#0a1220;--card:#13233a;--txt:#e6edf6;--mut:#93a4b8;--line:#243a56;--greenbg:#0f3a2c;--redbg:#3b1b1d;--navy:#dbe7f5;color-scheme:dark}html[data-theme=dark] header,html[data-theme=dark] .hero,html[data-theme=dark] .cal .d.hoje,html[data-theme=dark] .foto{background:#0a2a4a}html[data-theme=dark] .chip.on{background:#0b7a52;border-color:#0b7a52;color:#fff}html[data-theme=dark] header .chip.on{background:#fff;border-color:#fff;color:#0a2a4a}html[data-theme=dark] nav,html[data-theme=dark] .box,html[data-theme=dark] .chip,html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] .seg button,html[data-theme=dark] .seg3 button,html[data-theme=dark] .qb,html[data-theme=dark] .btn.g,html[data-theme=dark] .btn.r,html[data-theme=dark] .pago{background:var(--card)}html[data-theme=dark] header .chip{background:#ffffff1a}html[data-theme=dark] .seg3 button.on{background:var(--greenbg)}html[data-theme=dark] .pago.s{background:var(--green)}html[data-theme=dark] .ring::after{background:var(--card)}html[data-theme=dark] .ring2 svg.r circle:first-child{stroke:#243a56}html[data-theme=dark] .cal .d,html[data-theme=dark] .cir.sq2{background:#1a2f49}html[data-theme=dark] .prog{background:#243a56}html[data-theme=dark] .card.blue,html[data-theme=dark] .nt.blue,html[data-theme=dark] .sug{background:#12304f}html[data-theme=dark] .nt.red{background:#3b1b1d}html[data-theme=dark] .nt.green{background:#0f3a2c}html[data-theme=dark] .rs.tot{background:#0f2b3a}html[data-theme=dark] .tip{color:#7fe3b5}html[data-theme=dark] .in,html[data-theme=dark] .val.in{color:#35d391}html[data-theme=dark] .out,html[data-theme=dark] .val.out{color:#ff8a80}html[data-theme=dark] nav button.on{color:#35d391}html[data-theme=dark] .btn.w{color:#0a2a4a}html[data-theme=dark] .warn{background:#3a3010;border-color:#5b4c14;color:#f1dc9a}html[data-theme=dark] .nt small{color:#b8c6d8}
 </style>
 </head>
 <body>
@@ -197,10 +197,13 @@ function quiz(step,m){
 }
 function quizFim(){lerNomes();if(!D.pessoas[0]){alert("Escreva o seu nome");return}if(S.qm==="casal"&&!D.pessoas[1]){alert("Escreva o nome da sua esposa ou marido");return}
   D.modo=S.qm;S.pessoa="casal";save();fechar();render()}
+function aplicaTema(){const t=D.tema||"claro";const dark=t==="escuro"||(t==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",dark?"dark":"light")}
+function setTema(t){D.tema=t;save();render()}
+function perfilTema(){return`<div class="card"><h3>Aparência</h3><div class="seg3">${[["claro","Claro"],["escuro","Escuro"],["auto","Automático"]].map(([k,n])=>`<button class="${(D.tema||"claro")===k?"on":""}" onclick="setTema('${k}')">${n}</button>`).join("")}</div></div>`}
 function setPessoa(p){S.pessoa=p;render()}
 function setTab(t){S.tab=t;S.sub=null;S.dia=null;window.scrollTo(0,0);render()}
 
-function render(){
+function render(){aplicaTema();
   const [y,m]=S.ym.split("-").map(Number);
   document.getElementById("mesTxt").textContent=MESES[m-1]+" "+y;
   document.getElementById("chips").innerHTML=chipsHtml();
@@ -367,7 +370,7 @@ function marca(id){const t=D.tx.find(x=>x.id===id);t.pago=t.pago||{};t.pago[S.ym
 
 function vPerfil(){
   return`<div class="card"><div class="fotoBox">${D.foto?`<img class="foto" src="${D.foto}">`:`<div class="foto">${esc(D.pessoas[0][0]||"?")}</div>`}<div style="flex:1"><b style="font-size:18px">${esc(D.pessoas[0])}</b><label class="btn g" for="ff" style="display:block;margin:8px 0 0;text-align:center;font-size:14px;padding:10px">📷 ${D.foto?"Trocar foto":"Colocar minha foto"}</label><input id="ff" type="file" accept="image/*" style="display:none" onchange="fotoEscolhida(this)"></div></div></div>
-  ${perfilConfig()}
+  ${perfilConfig()}${perfilTema()}
   <div class="warn">⚠️ Por enquanto os dados ficam <b>só neste aparelho</b>. Mais para frente entra o convite, e os celulares passam a ver o mesmo caderno.</div>
   <div class="card"><h3>Cópia de segurança</h3><button class="btn g" onclick="exporta()">Baixar cópia dos meus dados</button><label style="margin-top:14px">Restaurar uma cópia</label><input type="file" accept=".json" onchange="importa(this)"></div>
   <div class="card"><h3>Testes</h3><button class="btn g" onclick="exemplo()">Carregar dados de exemplo</button><button class="btn r" onclick="zera()">Apagar tudo</button></div>`;
