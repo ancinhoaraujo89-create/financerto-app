@@ -60,7 +60,18 @@ h3{margin:4px 0 10px;font-size:16px}
 .cal .e{background:none}
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:6}
 nav button{flex:1;border:0;background:none;color:var(--mut);font-size:11px;font-weight:600;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button span{font-size:21px}nav button.on{color:var(--green)}
+nav button svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--green)}nav button .av{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid transparent}nav button.on .av{border-color:var(--green)}
+.ring2{position:relative;width:190px;height:190px;margin:4px auto 0}.ring2 svg.r{width:190px;height:190px;transform:rotate(-90deg)}
+.ring2 .jar{position:absolute;left:50%;top:50%;transform:translate(-50%,-62%);width:92px}
+.cvalor{text-align:center;font-size:26px;font-weight:800;margin-top:6px}
+.prog{height:10px;background:#e6edf4;border-radius:8px;overflow:hidden;margin:8px 0 4px}.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:8px}
+.pcts{display:flex;gap:6px;margin:6px 0 10px}.pcts .chip{flex:1;text-align:center;padding:9px 0}
+.sug{background:#eaf2fb;border-radius:14px;padding:12px;text-align:center}.sug b{display:block;font-size:24px;color:var(--navy)}
+.bars{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;margin-top:8px}
+.bars div.c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--mut)}
+.bars .pair{display:flex;align-items:flex-end;gap:3px;height:96px}.bars .pair i{width:11px;border-radius:5px 5px 2px 2px;display:block;min-height:3px}
+.fotoBox{display:flex;align-items:center;gap:14px}.foto{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:800;flex:none}
 .fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(78px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;border:0;background:var(--green);color:#fff;font-size:32px;box-shadow:0 6px 16px rgba(11,122,82,.4);z-index:7}
 .sheet{position:fixed;inset:0;background:rgba(10,42,74,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .sheet.on{display:flex}
@@ -138,8 +149,13 @@ function render(){
   const [y,m]=S.ym.split("-").map(Number);
   document.getElementById("mesTxt").textContent=MESES[m-1]+" "+y;
   document.getElementById("chips").innerHTML=[["casal","Casal"],["p0",D.pessoas[0]],["p1",D.pessoas[1]]].map(([k,n])=>`<button class="chip ${S.pessoa===k?"on":""}" onclick="setPessoa('${k}')">${n}</button>`).join("");
-  const nav=[["home","🏠","Início"],["lanc","🧾","Lançamentos"],["cof","🐷","Cofrinho"],["contas","📅","Contas"],["perfil","👤","Perfil"]];
-  document.getElementById("nav").innerHTML=nav.map(([k,i,n])=>`<button class="${S.tab===k?"on":""}" onclick="setTab('${k}')"><span>${i}</span>${n}</button>`).join("");
+  const ICO={home:'<path d="M3 11l9-8 9 8"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+    lanc:'<path d="M6 20v-6M12 20V5M18 20v-10" stroke-width="3.2"/>',
+    cof:'<path d="M8 3h8v3H8z"/><path d="M6.5 6h11v13a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2z"/><circle cx="12" cy="13.5" r="2.6"/>',
+    contas:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    perfil:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'};
+  const nav=[["home","Início"],["lanc","Lançamentos"],["cof","Cofrinho"],["contas","Contas"],["perfil","Perfil"]];
+  document.getElementById("nav").innerHTML=nav.map(([k,n])=>`<button class="${S.tab===k?"on":""}" onclick="setTab('${k}')">${k==="perfil"&&D.foto?`<img class="av" src="${D.foto}">`:`<svg viewBox="0 0 24 24">${ICO[k]}</svg>`}${n}</button>`).join("");
   const oc=ocorr(S.ym);
   document.getElementById("main").innerHTML=({home:vHome,lanc:vLanc,cof:vCof,contas:vContas,perfil:vPerfil})[S.tab](oc);
 }
@@ -177,13 +193,41 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function vLanc(oc){
   const hoje=new Date().toISOString().slice(0,10);
   let l=oc;if(S.filtro==="e")l=oc.filter(o=>o.t.tipo==="e");if(S.filtro==="s")l=oc.filter(o=>o.t.tipo==="s");
-  return`<div class="tabs">${[["todos","Todos"],["e","Entradas"],["s","Despesas"]].map(([k,n])=>`<button class="chip ${S.filtro===k?"on":""}" onclick="S.filtro='${k}';render()">${n}</button>`).join("")}</div>
+  let [yy,mm]=S.ym.split("-").map(Number),ms=[];
+  for(let i=5;i>=0;i--){let a=mm-i,b=yy;while(a<1){a+=12;b--}const k=b+"-"+pad(a);ms.push([MESES[a-1].slice(0,3),tot(ocorr(k))])}
+  const mx=Math.max(1,...ms.map(x=>Math.max(x[1].e,x[1].s)));
+  const graf=`<div class="card"><h3>Últimos 6 meses</h3><div class="lbl"><i class="dot" style="background:#16a06a"></i>entradas <i class="dot" style="background:#d6453d;margin-left:10px"></i>despesas</div><div class="bars">${ms.map(([n,t])=>`<div class="c"><div class="pair"><i style="height:${t.e/mx*96}px;background:#16a06a"></i><i style="height:${t.s/mx*96}px;background:#d6453d"></i></div>${n}</div>`).join("")}</div></div>`;
+  return graf+`<div class="tabs">${[["todos","Todos"],["e","Entradas"],["s","Despesas"]].map(([k,n])=>`<button class="chip ${S.filtro===k?"on":""}" onclick="S.filtro='${k}';render()">${n}</button>`).join("")}</div>
   <div class="card">${l.length?l.map(o=>linha(o,hoje)).join(""):'<div class="vazio">Nada por aqui neste mês.<br>Toque no + para lançar.</div>'}</div>`;
 }
 
-function vCof(){
-  return`<div class="card" style="text-align:center;padding:28px 16px"><div style="font-size:54px">🐷</div><h3>Cofrinho</h3><p style="color:var(--mut);font-size:14px;margin:6px 0 0">Aqui vai ficar a meta de guardar dinheiro, a barra de progresso e o depósito mensal.<br><br><b>Chega na Fase 5.</b></p></div>`;
+function cofre(){D.cofre=D.cofre||{nome:"Reserva de emergência",alvo:2000,pct:10,dep:[]};return D.cofre}
+const JAR='<svg class="jar" viewBox="0 0 90 100"><rect x="22" y="4" width="46" height="12" rx="5" fill="#0b7a52"/><path d="M16 20h58v62a12 12 0 0 1-12 12H28a12 12 0 0 1-12-12z" fill="#e6f4ee" stroke="#16a06a" stroke-width="4"/><circle cx="45" cy="64" r="15" fill="#f2b01e" stroke="#d99a0b" stroke-width="3"/><path d="M45 56v16M40 60h8a3 3 0 0 1 0 6h-6a3 3 0 0 0 0 6h8" stroke="#a87100" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
+function vCof(oc){
+  const c=cofre(),tot_=c.dep.reduce((s,d)=>s+d.valor,0),p=Math.min(100,c.alvo>0?tot_/c.alvo*100:0),t=tot(oc),sug=t.sobra>0?t.sobra*c.pct/100:0;
+  const R=80,L=2*Math.PI*R;
+  return`<div class="card"><div class="ring2"><svg class="r" viewBox="0 0 190 190"><circle cx="95" cy="95" r="${R}" fill="none" stroke="#e6edf4" stroke-width="14"/><circle cx="95" cy="95" r="${R}" fill="none" stroke="#16a06a" stroke-width="14" stroke-linecap="round" stroke-dasharray="${L*p/100} ${L}"/></svg>${JAR}</div>
+  <div class="cvalor">${brl(tot_)}</div><div class="lbl" style="justify-content:center">guardados</div>
+  <h3 style="text-align:center;margin-top:12px">Meta: ${esc(c.nome)} · ${brl(c.alvo)}</h3><div class="prog"><i style="width:${p}%"></i></div><div class="lbl" style="justify-content:center"><b>${Math.round(p)}%</b>&nbsp;concluído</div>
+  <div class="row2"><button class="btn" onclick="cofDep(${sug>0?sug.toFixed(2):0})">Depositar</button><button class="btn g" onclick="cofMeta()">Editar meta</button></div></div>
+  <div class="card"><h3>Plano de economia</h3><div class="lbl">Quanto você quer guardar do que sobrou?</div><div class="pcts">${[5,10,20,30,50].map(x=>`<button class="chip ${c.pct===x?"on":""}" onclick="cofre().pct=${x};save();render()">${x}%</button>`).join("")}</div>
+  <div class="sug"><div class="lbl" style="justify-content:center">Valor sugerido este mês</div><b>${brl(sug)}</b><div class="lbl" style="justify-content:center">${brl(Math.max(0,t.sobra))} × ${c.pct}%</div></div>
+  ${sug>0?`<button class="btn" onclick="cofDep(${sug.toFixed(2)})">Guardar no cofrinho</button>`:`<div class="vazio">Quando sobrar dinheiro no mês, a sugestão aparece aqui.</div>`}</div>
+  <div class="card"><h3>Histórico</h3>${c.dep.length?c.dep.slice().reverse().slice(0,8).map(d=>`<div class="item" onclick="cofDel('${d.id}')"><div class="ic in">⬇</div><div class="it"><b>Depósito</b><small>${d.data.split("-").reverse().join("/")}</small></div><div class="am in">${brl(d.valor)}</div></div>`).join(""):'<div class="vazio">Nenhum depósito ainda.</div>'}</div>`;
 }
+function cofDep(v){
+  document.getElementById("box").innerHTML=`<h3>Depositar no cofrinho</h3><label>Valor (R$)</label><input id="cv" inputmode="decimal" placeholder="0,00" value="${v?String(v).replace(".",","):""}"><button class="btn" onclick="cofGrava()">Guardar</button><button class="btn g" onclick="fechar()">Cancelar</button>`;
+  document.getElementById("sheet").classList.add("on");
+}
+function cofGrava(){const v=parseFloat(document.getElementById("cv").value.replace(/\./g,"").replace(",","."));if(!(v>0)){alert("Coloque o valor. Exemplo: 200,00");return}
+  cofre().dep.push({id:uid(),valor:Math.round(v*100)/100,data:new Date().toISOString().slice(0,10)});save();fechar();render()}
+function cofDel(id){if(confirm("Excluir este depósito?")){cofre().dep=cofre().dep.filter(d=>d.id!==id);save();render()}}
+function cofMeta(){const c=cofre();
+  document.getElementById("box").innerHTML=`<h3>Editar meta</h3><label>Nome da meta</label><input id="mn" value="${esc(c.nome)}"><label>Valor da meta (R$)</label><input id="ma" inputmode="decimal" value="${String(c.alvo).replace(".",",")}"><button class="btn" onclick="cofMetaGrava()">Salvar</button><button class="btn g" onclick="fechar()">Cancelar</button>`;
+  document.getElementById("sheet").classList.add("on")}
+function cofMetaGrava(){const a=parseFloat(document.getElementById("ma").value.replace(/\./g,"").replace(",","."));if(!(a>0)){alert("Coloque o valor da meta");return}
+  const c=cofre();c.nome=document.getElementById("mn").value.trim()||"Minha meta";c.alvo=a;save();fechar();render()}
+function fotoEscolhida(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement("canvas");cv.width=cv.height=240;cv.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,240,240);D.foto=cv.toDataURL("image/jpeg",0.82);save();render()};im.src=r.result};r.readAsDataURL(f)}
 
 function vContas(oc){
   const [y,m]=S.ym.split("-").map(Number),n=dim(y,m),prim=new Date(y,m-1,1).getDay();
@@ -206,8 +250,9 @@ function vContas(oc){
 function marca(id){const t=D.tx.find(x=>x.id===id);t.pago=t.pago||{};t.pago[S.ym]=!t.pago[S.ym];save();render()}
 
 function vPerfil(){
-  return`<div class="card"><h3>Nomes do casal</h3><label>Pessoa 1</label><input id="n0" value="${esc(D.pessoas[0])}"><label>Pessoa 2</label><input id="n1" value="${esc(D.pessoas[1])}"><button class="btn" onclick="salvaNomes()">Salvar nomes</button></div>
-  <div class="warn">⚠️ Por enquanto os dados ficam <b>só neste aparelho</b>. Na Fase 3 entra o login e os dois celulares passam a ver o mesmo caderno.</div>
+  return`<div class="card"><div class="fotoBox">${D.foto?`<img class="foto" src="${D.foto}">`:`<div class="foto">${esc(D.pessoas[0][0]||"?")}</div>`}<div style="flex:1"><b style="font-size:18px">${esc(D.pessoas[0])}</b><label class="btn g" for="ff" style="display:block;margin:8px 0 0;text-align:center;font-size:14px;padding:10px">📷 ${D.foto?"Trocar foto":"Colocar minha foto"}</label><input id="ff" type="file" accept="image/*" style="display:none" onchange="fotoEscolhida(this)"></div></div></div>
+  <div class="card"><h3>Nomes do casal</h3><label>Pessoa 1</label><input id="n0" value="${esc(D.pessoas[0])}"><label>Pessoa 2</label><input id="n1" value="${esc(D.pessoas[1])}"><button class="btn" onclick="salvaNomes()">Salvar nomes</button></div>
+  <div class="warn">⚠️ Por enquanto os dados ficam <b>só neste aparelho</b>. Mais para frente entra o convite, e os celulares passam a ver o mesmo caderno.</div>
   <div class="card"><h3>Cópia de segurança</h3><button class="btn g" onclick="exporta()">Baixar cópia dos meus dados</button><label style="margin-top:14px">Restaurar uma cópia</label><input type="file" accept=".json" onchange="importa(this)"></div>
   <div class="card"><h3>Testes</h3><button class="btn g" onclick="exemplo()">Carregar dados de exemplo</button><button class="btn r" onclick="zera()">Apagar tudo</button></div>`;
 }
