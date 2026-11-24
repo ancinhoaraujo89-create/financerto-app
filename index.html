@@ -124,8 +124,12 @@ input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:
 
 <script>
 const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const CATS_OUT=[["Moradia","🏠","#2f80ed"],["Alimentação","🛒","#16a06a"],["Transporte","🚗","#f2b01e"],["Saúde","💊","#9b59b6"],["Lazer","🎉","#e67e22"],["Dívidas e cartão","💳","#d6453d"],["Outros","📦","#8896a8"]];
-const CATS_IN=[["Salário","💼"],["Autônomo / serviço","🛠️"],["Extra","✨"]];
+const CATS_OUT=[["Moradia","🏠","#2f80ed"],["Alimentação","🛒","#16a06a"],["Transporte","🚗","#f2b01e"],["Saúde","💊","#9b59b6"],["Lazer","🎉","#e67e22"],["Dívidas e cartão","💳","#d6453d"],["Pensão alimentícia","⚖️","#5d6d7e"],["Outros","📦","#8896a8"]];
+const CATS_IN=[["Salário","💼"],["Autônomo / serviço","🛠️"],["Extra","✨"],["Outros","📦"]];
+const CATS_EMP=[["Fornecedores","🏭","#2f80ed"],["Aluguel e estrutura","🏢","#16a06a"],["Equipe e salários","👥","#9b59b6"],["Impostos e taxas","🧾","#d6453d"],["Marketing e anúncios","📣","#e67e22"],["Ferramentas e sistemas","💻","#f2b01e"],["Transporte e combustível","🚗","#1abc9c"],["Retirada do sócio","👤","#34495e"],["Outros","📦","#8896a8"]];
+const CATS_IN_EMP=[["Vendas","🛒"],["Serviços prestados","🛠️"],["Recebimento de cliente","💰"],["Outros","📦"]];
+function listaCats(tipo){return tipo==="e"?(D.modo==="empresa"?CATS_IN_EMP:CATS_IN):(D.modo==="empresa"?CATS_EMP:CATS_OUT)}
+function catCor(n){const c=[...CATS_OUT,...CATS_EMP].find(x=>x[0]===n);return c?c[2]:"#8896a8"}
 const KEY="financerto_v1";
 let D=load();
 let S={tab:"home",ym:ymNow(),pessoa:"casal",filtro:"todos",dia:null,edit:null,form:null};
@@ -155,7 +159,7 @@ function tot(oc){
   const ap=oc.filter(o=>o.t.tipo==="s"&&!pago(o)).reduce((s,o)=>s+o.t.valor,0);
   return{e,s,sobra:e-s,ap};
 }
-function catInfo(o){return o.t.tipo==="e"?(CATS_IN.find(c=>c[0]===o.t.cat)||["","✨"]):(CATS_OUT.find(c=>c[0]===o.t.cat)||CATS_OUT[6])}
+function catInfo(o){return o.t.tipo==="e"?([...CATS_IN,...CATS_IN_EMP].find(c=>c[0]===o.t.cat)||["","✨"]):([...CATS_OUT,...CATS_EMP].find(c=>c[0]===o.t.cat)||["Outros","📦","#8896a8"])}
 function nomeP(p){return p==="casal"?"Casal":p==="p0"?D.pessoas[0]:D.pessoas[1]}
 function dBR(d){const [y,m,dd]=d.split("-");return dd+"/"+m}
 
@@ -232,8 +236,8 @@ function catRows(oc){const cat={};oc.filter(o=>o.t.tipo==="s").forEach(o=>cat[o.
 function donutHtml(oc){
   const t=tot(oc),arr=catRows(oc),pc=t.e>0?Math.round(t.s/t.e*100):0;
   let bg="#e6edf4";
-  if(arr.length){let acc=0;bg="conic-gradient("+arr.map(([n,v])=>{const c=(CATS_OUT.find(x=>x[0]===n)||CATS_OUT[6])[2],a=acc,b=acc+v/t.s*100;acc=b;return`${c} ${a}% ${b}%`}).join(",")+")"}
-  const leg=arr.length?arr.map(([n,v])=>{const c=(CATS_OUT.find(x=>x[0]===n)||CATS_OUT[6])[2];return`<div class="lg"><div><span><i class="dot" style="background:${c}"></i>${n}</span><b>${Math.round(v/t.s*100)}%</b></div><small>${brl(v)}</small></div>`}).join(""):`<div class="vazio" style="padding:6px 0;text-align:left">Lance despesas para ver os gastos por categoria.</div>`;
+  if(arr.length){let acc=0;bg="conic-gradient("+arr.map(([n,v])=>{const c=catCor(n),a=acc,b=acc+v/t.s*100;acc=b;return`${c} ${a}% ${b}%`}).join(",")+")"}
+  const leg=arr.length?arr.map(([n,v])=>{const c=catCor(n);return`<div class="lg"><div><span><i class="dot" style="background:${c}"></i>${n}</span><b>${Math.round(v/t.s*100)}%</b></div><small>${brl(v)}</small></div>`}).join(""):`<div class="vazio" style="padding:6px 0;text-align:left">Lance despesas para ver os gastos por categoria.</div>`;
   return`<div class="donut"><div class="ring" style="background:${bg}"><b>${pc}%</b></div><div class="leg">${leg}</div></div>`;
 }
 function notifs(){
@@ -297,7 +301,7 @@ function vNotif(){
 }
 function linha(o,hoje){
   const ci=catInfo(o),atr=o.t.tipo==="s"&&!pago(o)&&o.data<hoje;
-  return`<div class="item" onclick="abrir('${o.t.id}')"><div class="ic ${o.t.tipo==="e"?"in":"out"}">${ci[1]}</div><div class="it"><b>${esc(o.t.desc)}</b><small>${dBR(o.data)} · ${nomeP(o.t.pessoa)}${o.t.rep?" · todo mês":""}${atr?' · <span style="color:var(--red);font-weight:700">atrasada</span>':""}</small></div><div class="am ${o.t.tipo==="e"?"in":"out"}">${o.t.tipo==="e"?"+":"-"} ${brl(o.t.valor)}</div></div>`;
+  return`<div class="item" onclick="abrir('${o.t.id}')"><div class="ic ${o.t.tipo==="e"?"in":"out"}">${ci[1]}</div><div class="it"><b>${esc(o.t.desc)}</b><small>${dBR(o.data)} · ${nomeP(o.t.pessoa)}${o.t.rep?" · todo mês":""}${o.t.catOutro?" · "+esc(o.t.catOutro):""}${atr?' · <span style="color:var(--red);font-weight:700">atrasada</span>':""}</small></div><div class="am ${o.t.tipo==="e"?"in":"out"}">${o.t.tipo==="e"?"+":"-"} ${brl(o.t.valor)}</div></div>`;
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 
@@ -356,7 +360,7 @@ function vContas(oc){
   const lista=S.dia?oc.filter(o=>o.data===S.dia):oc.filter(o=>o.t.tipo==="s");
   html+=`<div class="card"><h3>${S.dia?"Dia "+dBR(S.dia):"Contas a pagar do mês"}</h3>${lista.length?lista.map(o=>{
     const ci=catInfo(o),atr=o.t.tipo==="s"&&!pago(o)&&o.data<hoje;
-    return`<div class="item"><div class="ic ${o.t.tipo==="e"?"in":"out"}" onclick="abrir('${o.t.id}')">${ci[1]}</div><div class="it" onclick="abrir('${o.t.id}')"><b>${esc(o.t.desc)}</b><small>vence ${dBR(o.data)} · ${nomeP(o.t.pessoa)}${atr?' · <span style="color:var(--red);font-weight:700">atrasada</span>':""}</small></div><div class="am ${o.t.tipo==="e"?"in":"out"}">${brl(o.t.valor)}<br>${o.t.tipo==="s"?`<button class="pago ${pago(o)?"s":""}" onclick="marca('${o.t.id}')">${pago(o)?"✓ Pago":"Marcar pago"}</button>`:""}</div></div>`}).join(""):'<div class="vazio">Nenhuma conta aqui.</div>'}</div>`;
+    return`<div class="item"><div class="ic ${o.t.tipo==="e"?"in":"out"}" onclick="abrir('${o.t.id}')">${ci[1]}</div><div class="it" onclick="abrir('${o.t.id}')"><b>${esc(o.t.desc)}</b><small>vence ${dBR(o.data)} · ${nomeP(o.t.pessoa)}${o.t.catOutro?" · "+esc(o.t.catOutro):""}${atr?' · <span style="color:var(--red);font-weight:700">atrasada</span>':""}</small></div><div class="am ${o.t.tipo==="e"?"in":"out"}">${brl(o.t.valor)}<br>${o.t.tipo==="s"?`<button class="pago ${pago(o)?"s":""}" onclick="marca('${o.t.id}')">${pago(o)?"✓ Pago":"Marcar pago"}</button>`:""}</div></div>`}).join(""):'<div class="vazio">Nenhuma conta aqui.</div>'}</div>`;
   return html;
 }
 function marca(id){const t=D.tx.find(x=>x.id===id);t.pago=t.pago||{};t.pago[S.ym]=!t.pago[S.ym];save();render()}
@@ -389,7 +393,7 @@ function abrir(id){
 }
 function fechar(){document.getElementById("sheet").classList.remove("on")}
 function formHtml(){
-  const f=S.form,cats=f.tipo==="e"?CATS_IN:CATS_OUT;
+  const f=S.form,cats=listaCats(f.tipo);
   if(!cats.find(c=>c[0]===f.cat))f.cat=cats[0][0];
   document.getElementById("box").innerHTML=`<h3>${S.edit?"Editar":"Novo"} lançamento</h3>
   <div class="seg"><button class="e ${f.tipo==="e"?"on":""}" onclick="lerForm();S.form.tipo='e';formHtml()">⬆️ Entrada</button><button class="s ${f.tipo==="s"?"on":""}" onclick="lerForm();S.form.tipo='s';formHtml()">⬇️ Despesa</button></div>
@@ -397,21 +401,21 @@ function formHtml(){
   <label>Descrição</label><input id="fd" placeholder="${f.tipo==="e"?"Ex.: Salário":"Ex.: Conta de luz"}" value="${esc(f.desc)}">
   <label>${f.tipo==="e"?"Data de recebimento":"Data de vencimento"}</label><input id="fdt" type="date" value="${f.data}">
   ${D.modo==="casal"?`<label>${f.tipo==="e"?"Quem recebe":"Quem paga"}</label><select id="fp"><option value="p0">${esc(D.pessoas[0])}</option><option value="p1">${esc(D.pessoas[1])}</option><option value="casal">Casal (dividido)</option></select>`:`<input type="hidden" id="fp" value="p0">`}
-  <label>Categoria</label><select id="fc">${cats.map(c=>`<option ${c[0]===f.cat?"selected":""}>${c[0]}</option>`).join("")}</select>
+  <label>Categoria</label><select id="fc" onchange="lerForm();formHtml()">${cats.map(c=>`<option ${c[0]===f.cat?"selected":""}>${c[0]}</option>`).join("")}</select>${f.cat==="Outros"?`<label>Qual é esse outro tipo?</label><input id="fo" placeholder="${f.tipo==="e"?"Ex.: venda de um objeto":D.modo==="empresa"?"Ex.: manutenção do carro":"Ex.: presente, reforma..."}" value="${esc(f.catOutro||"")}">`:""}
   <label class="chk"><input type="checkbox" id="fr" ${f.rep?"checked":""}> Repete todo mês</label>
   <button class="btn" onclick="gravar()">Salvar</button>
   ${S.edit?'<button class="btn r" onclick="apagar()">Excluir</button>':""}
   <button class="btn g" onclick="fechar()">Cancelar</button>`;
   document.getElementById("fp").value=(D.modo==="casal"?f.pessoa:"p0");
 }
-function lerForm(){const f=S.form;f.valor=document.getElementById("fv").value;f.desc=document.getElementById("fd").value;f.data=document.getElementById("fdt").value||f.data;f.pessoa=document.getElementById("fp").value;f.cat=document.getElementById("fc").value;f.rep=document.getElementById("fr").checked}
+function lerForm(){const f=S.form;f.valor=document.getElementById("fv").value;f.desc=document.getElementById("fd").value;f.data=document.getElementById("fdt").value||f.data;f.pessoa=document.getElementById("fp").value;f.cat=document.getElementById("fc").value;f.catOutro=(f.cat==="Outros"&&document.getElementById("fo"))?document.getElementById("fo").value:"";f.rep=document.getElementById("fr").checked}
 function gravar(){
   lerForm();const f=S.form;
   const v=parseFloat(String(f.valor).replace(/\./g,"").replace(",","."));
   if(!(v>0)){alert("Coloque o valor. Exemplo: 350,00");return}
   if(!f.desc.trim()){alert("Escreva uma descrição. Exemplo: Conta de luz");return}
-  if(!f.data){alert("Escolha a data");return}
-  const novo={id:S.edit||uid(),tipo:f.tipo,desc:f.desc.trim(),valor:Math.round(v*100)/100,data:f.data,pessoa:f.pessoa,cat:f.cat,rep:f.rep,pago:(S.edit&&D.tx.find(x=>x.id===S.edit).pago)||{}};
+  if(!f.data){alert("Escolha a data");return}if(f.cat==="Outros"&&!(f.catOutro||"").trim()){alert("Escreva qual é esse outro tipo");return}
+  const novo={id:S.edit||uid(),tipo:f.tipo,desc:f.desc.trim(),valor:Math.round(v*100)/100,data:f.data,pessoa:f.pessoa,cat:f.cat,catOutro:f.cat==="Outros"?(f.catOutro||"").trim():"",rep:f.rep,pago:(S.edit&&D.tx.find(x=>x.id===S.edit).pago)||{}};
   if(S.edit)D.tx[D.tx.findIndex(x=>x.id===S.edit)]=novo;else D.tx.push(novo);
   save();fechar();render();
 }
